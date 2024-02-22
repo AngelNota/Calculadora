@@ -59,6 +59,8 @@ namespace Calculadora
 
             // Verificar si ya se ha aplicado la raíz cuadrada
             bool raizAplicada = false;
+            // Verificar si ya se ha aplicado la operación x^2
+            bool xCuadradoAplicado = false;
 
             // Si ya hay un operador en el TextBox, realiza la operación pendiente
             if (!string.IsNullOrEmpty(operador))
@@ -74,10 +76,22 @@ namespace Calculadora
                     return;
                 }
 
+                // Si el operador es x^2 y ya se aplicó, no realizar la operación nuevamente
+                if (operador == "x^2" && xCuadradoAplicado)
+                {
+                    textBox1.Text = acumulado.ToString() + btn.Text;
+                    operador = btn.Text;
+                    numeroActual = "";
+                    return;
+                }
+
                 RealizarOperacion(numero);
 
                 // Si el operador es raíz cuadrada, marcar como aplicada
                 raizAplicada = (operador == "√");
+
+                // Si el operador es x^2, marcar como aplicada
+                xCuadradoAplicado = (operador == "x^2");
             }
             else
             {
@@ -100,6 +114,18 @@ namespace Calculadora
             if (operador == "√")
             {
                 RealizarOperacion(0);  // El segundo parámetro es arbitrario, ya que la raíz se calcula sobre el acumulado
+            }
+
+            // Si el operador es x^2 y ya se aplicó, no realizar la operación nuevamente
+            if (operador == "x^2" && xCuadradoAplicado)
+            {
+                return;
+            }
+
+            // Si el operador es x^2, realiza la operación inmediatamente
+            if (operador == "x^2")
+            {
+                RealizarOperacion(0);  // El segundo parámetro es arbitrario, ya que x^2 se calcula sobre el acumulado
             }
         }
 
