@@ -20,12 +20,14 @@ namespace Calculadora
         private List<string> historialOperaciones = new List<string>();
         // Variable para almacenar el valor acumulado
         private double acumulado = 0;
+        //Variable de la raiz
+        private bool resultadoRaizCalculado = false;
 
         // Variable para almacenar el operador
         private string operador = "";
 
         //variable para almacenar el numero actual
-        private string numeroActual = "";
+        private string numeroActual = "0";
 
         public Form1()
         {
@@ -51,25 +53,56 @@ namespace Calculadora
         {
             // Resetear la variable al presionar un operador
             puntoDecimalIngresado = false;
+
             // Manejar los eventos de los botones de operadores (+, -, *, /)
             Button btn = (Button)sender;
 
-            // Si ya hay un número en el TextBox, realiza la operación pendiente
-            if (!string.IsNullOrEmpty(numeroActual))
-            {
-                double numero = double.Parse(numeroActual);
-                // Si ya hay un operador en el TextBox, realiza la operación pendiente
-                if (!string.IsNullOrEmpty(operador))
-                    RealizarOperacion(numero);
-                else
-                    acumulado = numero;
+            // Verificar si ya se ha aplicado la raíz cuadrada
+            bool raizAplicada = false;
 
-                // Muestra el número y el operador en el TextBox
-                textBox1.Text = acumulado.ToString() + btn.Text;
-                operador = btn.Text;
-                numeroActual = "";
+            // Si ya hay un operador en el TextBox, realiza la operación pendiente
+            if (!string.IsNullOrEmpty(operador))
+            {
+                double numero = string.IsNullOrEmpty(numeroActual) ? 0 : double.Parse(numeroActual);
+
+                // Si el operador es raíz cuadrada y ya se aplicó, no realizar la operación nuevamente
+                if (operador == "√" && raizAplicada)
+                {
+                    textBox1.Text = acumulado.ToString() + btn.Text;
+                    operador = btn.Text;
+                    numeroActual = "";
+                    return;
+                }
+
+                RealizarOperacion(numero);
+
+                // Si el operador es raíz cuadrada, marcar como aplicada
+                raizAplicada = (operador == "√");
+            }
+            else
+            {
+                // Si no hay operador, simplemente asigna el número actual al acumulado
+                acumulado = string.IsNullOrEmpty(numeroActual) ? acumulado : double.Parse(numeroActual);
+            }
+
+            // Muestra el número y el operador en el TextBox
+            textBox1.Text = acumulado.ToString() + btn.Text;
+            operador = btn.Text;
+            numeroActual = "";
+
+            // Si el operador es raíz cuadrada y ya se aplicó, no realizar la operación nuevamente
+            if (operador == "√" && raizAplicada)
+            {
+                return;
+            }
+
+            // Si el operador es raíz cuadrada, realiza la operación inmediatamente
+            if (operador == "√")
+            {
+                RealizarOperacion(0);  // El segundo parámetro es arbitrario, ya que la raíz se calcula sobre el acumulado
             }
         }
+
         private void RealizarOperacion(double numero)
         {
             double acumuladoAntes = acumulado;
@@ -87,9 +120,7 @@ namespace Calculadora
                 case "÷":
                     // Asegúrate de no dividir por cero
                     if (numero != 0)
-                    {
                         acumulado /= numero;
-                    }
                     else
                     {
                         MessageBox.Show("Error: No es posible dividir por cero.", "Error de operación");
@@ -100,9 +131,7 @@ namespace Calculadora
                 case "1/x":
                     // Asegúrate de no dividir por cero
                     if (numero != 0)
-                    {
                         acumulado = 1 / acumulado;
-                    }
                     else
                     {
                         MessageBox.Show("Error: No es posible dividir 1 por cero.", "Error de operación");
@@ -116,9 +145,7 @@ namespace Calculadora
                 case "√":
                     // Asegúrate de no calcular la raíz cuadrada de un número negativo
                     if (acumulado >= 0)
-                    {
                         acumulado = Math.Sqrt(acumulado);
-                    }
                     else
                     {
                         MessageBox.Show("Error: No es posible calcular la raíz cuadrada de un número negativo.", "Error de operación");
@@ -278,22 +305,6 @@ namespace Calculadora
             btnOperador_Click(sender, e);
         }
 
-        private void mSToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            double valorActual = double.Parse(textBox1.Text);
-            valoresEnMemoria.Add(valorActual);
-            ActualizarValoresEnMemoria();
-        }
-
-        private void ActualizarValoresEnMemoria()
-        {
-            listBox2.Items.Clear();
-            foreach (double valor in valoresEnMemoria)
-            {
-                listBox2.Items.Add(valor);
-            }
-        }
-
         private void ActualizarHistorial()
         {
             listBox1.Items.Clear();
@@ -376,5 +387,21 @@ namespace Calculadora
                 puntoDecimalIngresado = true;
             }
         }
+        private void mSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            double valorActual = double.Parse(textBox1.Text);
+            valoresEnMemoria.Add(valorActual);
+            ActualizarValoresEnMemoria();
+        }
+
+        private void ActualizarValoresEnMemoria()
+        {
+            listBox2.Items.Clear();
+            foreach (double valor in valoresEnMemoria)
+            {
+                listBox2.Items.Add(valor);
+            }
+        }
+
     }
 }
